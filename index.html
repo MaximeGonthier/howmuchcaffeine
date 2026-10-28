@@ -343,7 +343,7 @@
   </template>
 
   <script type="module">
-    import { caffeineRemaining } from "./decay.js";
+    import { caffeineInBody } from "./formulas.js";
 
     const caffeine = await fetch("caffeine.json").then((response) => response.json());
 
@@ -436,7 +436,7 @@
     const SVG_NS = "http://www.w3.org/2000/svg";
     const CHART_HEIGHT = 240;
     const MARGIN = { top: 18, right: 12, bottom: 28, left: 40 };
-    const SAMPLES_PER_HOUR = 12;
+    const SAMPLES_PER_HOUR = 4;
 
     let scale = null;
     let crosshair = null;
@@ -445,20 +445,14 @@
     function levelAt(time) {
       return intake
         .filter((entry) => entry.time <= time)
-        .reduce((sum, entry) => sum + caffeineRemaining(entry.mg, time - entry.time), 0);
+        .reduce((sum, entry) => sum + caffeineInBody(entry.mg, time - entry.time), 0);
     }
 
-    // Samples every 5 minutes, plus a vertical jump at each drink.
+    // One sample every 15 minutes, plus one at each drink so its dot sits on the line.
     function curvePoints() {
-      const drinkTimes = new Set(intake.map((entry) => entry.time));
-      const times = new Set(drinkTimes);
+      const times = new Set(intake.map((entry) => entry.time));
       for (let i = 0; i <= 24 * SAMPLES_PER_HOUR; i++) times.add(i / SAMPLES_PER_HOUR);
-
-      return [...times].sort((a, b) => a - b).flatMap((time) =>
-        drinkTimes.has(time)
-          ? [[time, levelAt(time - 1e-6)], [time, levelAt(time)]]
-          : [[time, levelAt(time)]]
-      );
+      return [...times].sort((a, b) => a - b).map((time) => [time, levelAt(time)]);
     }
 
     function niceStep(raw) {
@@ -528,12 +522,8 @@
       if (!tooltip.hidden) showCrosshair(cursorTime);
     }
 
-    // Snaps to the 5-minute grid, or to a drink within 10 minutes so its peak is reachable.
+    // Snaps to the nearest 15 minutes.
     function snapTime(time) {
-      const nearest = intake
-        .map((entry) => entry.time)
-        .reduce((best, t) => (Math.abs(t - time) < Math.abs(best - time) ? t : best), Infinity);
-      if (Math.abs(nearest - time) <= 1 / 6) return nearest;
       return Math.min(24, Math.max(0, Math.round(time * SAMPLES_PER_HOUR) / SAMPLES_PER_HOUR));
     }
 
@@ -572,7 +562,7 @@
     chart.addEventListener("focus", () => showCrosshair(cursorTime ?? snapTime(hoursNow())));
     chart.addEventListener("blur", hideCrosshair);
     chart.addEventListener("keydown", (event) => {
-      const delta = { ArrowLeft: -0.25, ArrowRight: 0.25 }[event.key];
+      const delta = { ArrowLeft: -1, ArrowRight: 1 }[event.key] / SAMPLES_PER_HOUR;
       if (!delta) return;
       event.preventDefault();
       showCrosshair(Math.min(24, Math.max(0, cursorTime + delta)));
