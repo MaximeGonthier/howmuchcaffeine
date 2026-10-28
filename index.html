@@ -16,6 +16,7 @@
       --caramel: #A8551E;
       --muted: #76563F;
       --grid: #E0CBAE;
+      --deep-blue: #1E3A8A;
     }
 
     * {
@@ -239,6 +240,22 @@
       stroke-linecap: round;
     }
 
+    .sleep-line {
+      stroke: var(--deep-blue);
+      stroke-width: 2;
+      stroke-dasharray: 6 4;
+    }
+
+    /* The cream outline keeps the label readable where the curve crosses it. */
+    .chart .sleep-label {
+      fill: var(--espresso);
+      font-weight: 600;
+      stroke: var(--cream);
+      stroke-width: 4px;
+      stroke-linejoin: round;
+      paint-order: stroke;
+    }
+
     .intake-tick {
       stroke: var(--caramel);
       stroke-width: 2;
@@ -345,7 +362,9 @@
   <script type="module">
     import { caffeineInBody } from "./formulas.js";
 
-    const caffeine = await fetch("caffeine.json").then((response) => response.json());
+    const [caffeine, sleep] = await Promise.all(
+      ["caffeine.json", "sleep.json"].map((file) => fetch(file).then((response) => response.json()))
+    );
 
     const totalOutput = document.getElementById("total");
     const panels = document.getElementById("drink-panels");
@@ -477,8 +496,9 @@
 
       const points = curvePoints();
       const highest = Math.max(...points.map(([, level]) => level));
-      const step = niceStep(Math.max(highest, 100) / 4);
-      const yMax = Math.ceil(Math.max(highest, 100) / step) * step;
+      const top = Math.max(highest, sleep.max_caffeine_mg * 1.5);
+      const step = niceStep(top / 4);
+      const yMax = Math.ceil(top / step) * step;
 
       const plotWidth = width - MARGIN.left - MARGIN.right;
       const plotHeight = height - MARGIN.top - MARGIN.bottom;
@@ -503,8 +523,12 @@
       draw("text", { x: x(now), y: MARGIN.top - 6, "text-anchor": "middle" }).textContent = "Now";
 
       const line = points.map(([time, level], i) => `${i ? "L" : "M"}${x(time).toFixed(1)},${y(level).toFixed(1)}`).join("");
+      const sleepY = y(sleep.max_caffeine_mg);
       draw("path", { class: "area", d: `${line}L${x(24)},${y(0)}L${x(0)},${y(0)}Z` });
+      draw("line", { class: "sleep-line", x1: MARGIN.left, x2: width - MARGIN.right, y1: sleepY, y2: sleepY });
       draw("path", { class: "curve", d: line });
+      draw("text", { class: "sleep-label", x: MARGIN.left + 6, y: sleepY - 6 })
+        .textContent = `Max for good sleep: ${sleep.max_caffeine_mg} mg`;
 
       for (const entry of intake) {
         draw("line", { class: "intake-tick", x1: x(entry.time), x2: x(entry.time), y1: y(0), y2: y(0) + 6 });
@@ -516,8 +540,8 @@
       draw("circle", { r: 5 }, crosshair);
 
       chart.setAttribute("aria-label", intake.length
-        ? `Caffeine in your body over the day, peaking at ${Math.round(highest)} mg.`
-        : "Caffeine in your body over the day. No drinks added yet.");
+        ? `Caffeine in your body over the day, peaking at ${Math.round(highest)} mg. Max for good sleep: ${sleep.max_caffeine_mg} mg.`
+        : `Caffeine in your body over the day. No drinks added yet. Max for good sleep: ${sleep.max_caffeine_mg} mg.`);
 
       if (!tooltip.hidden) showCrosshair(cursorTime);
     }
