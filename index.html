@@ -17,16 +17,15 @@
       box-sizing: border-box;
     }
 
-    html, body {
-      margin: 0;
-      height: 100%;
-    }
-
     body {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 1rem;
+      gap: 3rem;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem 1rem;
       background-color: var(--espresso);
       color: var(--cream);
       font-family: "Fraunces", Georgia, "Times New Roman", serif;
@@ -41,9 +40,83 @@
       text-align: center;
       text-wrap: balance;
     }
+
+    .drinks {
+      display: grid;
+      grid-template-columns: repeat(3, 12rem);
+      gap: 1.5rem;
+    }
+
+    .drink {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      aspect-ratio: 1;
+      border: none;
+      border-radius: 1rem;
+      background-color: var(--cream);
+      color: var(--espresso);
+      font: inherit;
+      font-size: 1.25rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    @media (hover: hover) {
+      .drink:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+      }
+    }
+
+    .drink:active {
+      transform: scale(0.95);
+      box-shadow: none;
+    }
+
+    .drink:focus-visible {
+      outline: 3px solid var(--cream);
+      outline-offset: 4px;
+    }
+
+    .drink-icon {
+      font-size: 3.5rem;
+      line-height: 1;
+    }
+
+    @media (max-width: 600px) {
+      .drinks {
+        grid-template-columns: 1fr;
+        width: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .drink {
+        transition: none;
+      }
+    }
   </style>
 </head>
 <body>
   <h1>Quickly calculate your caffeine intake</h1>
+
+  <div class="drinks">
+    <button type="button" class="drink">
+      <span class="drink-icon" aria-hidden="true">☕</span>
+      Espresso
+    </button>
+    <button type="button" class="drink">
+      <span class="drink-icon" aria-hidden="true">☕</span>
+      Cappuccino
+    </button>
+    <button type="button" class="drink">
+      <span class="drink-icon" aria-hidden="true">☕</span>
+      Americano
+    </button>
+  </div>
 </body>
 </html>
