@@ -1,5 +1,8 @@
 {
   "espresso": { "caffeine_mg": 63 },
   "cappuccino": { "caffeine_mg": 63 },
-  "americano": { "caffeine_mg": 63 }
+  "americano": { "caffeine_mg": 63 },
+  "matcha": { "caffeine_mg": 70 },
+  "tea": { "caffeine_mg": 47 },
+  "energy_drink": { "caffeine_mg": 80 }
 }

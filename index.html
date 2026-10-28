@@ -17,6 +17,7 @@
       --muted: #76563F;
       --grid: #E0CBAE;
       --deep-blue: #1E3A8A;
+      --crimson: #9F1239;
     }
 
     * {
@@ -190,14 +191,9 @@
     }
 
     .chart-card h2 {
-      margin: 0;
+      margin: 0 0 1rem;
       font-size: 1.25rem;
       font-weight: 600;
-    }
-
-    .chart-subtitle {
-      margin: 0.25rem 0 1rem;
-      color: var(--muted);
     }
 
     .chart-frame {
@@ -240,14 +236,21 @@
       stroke-linecap: round;
     }
 
-    .sleep-line {
-      stroke: var(--deep-blue);
+    .limit-line {
       stroke-width: 2;
       stroke-dasharray: 6 4;
     }
 
-    /* The cream outline keeps the label readable where the curve crosses it. */
-    .chart .sleep-label {
+    .limit-line.safe {
+      stroke: var(--deep-blue);
+    }
+
+    .limit-line.harmful {
+      stroke: var(--crimson);
+    }
+
+    /* The cream outline keeps the labels readable where the curve crosses them. */
+    .chart .limit-label {
       fill: var(--espresso);
       font-weight: 600;
       stroke: var(--cream);
@@ -364,17 +367,34 @@
         Americano
       </button>
     </div>
+    <div class="drink" data-drink="matcha" data-state="idle">
+      <button type="button" class="drink-face">
+        <span class="drink-icon" aria-hidden="true">🍵</span>
+        Matcha
+      </button>
+    </div>
+    <div class="drink" data-drink="tea" data-state="idle">
+      <button type="button" class="drink-face">
+        <span class="drink-icon" aria-hidden="true">🫖</span>
+        Tea
+      </button>
+    </div>
+    <div class="drink" data-drink="energy_drink" data-state="idle">
+      <button type="button" class="drink-face">
+        <span class="drink-icon" aria-hidden="true">⚡</span>
+        Energy drink
+      </button>
+    </div>
   </div>
 
   <section class="chart-card">
     <h2>Caffeine in your body</h2>
-    <p class="chart-subtitle">In mg, from midnight to midnight</p>
     <div class="chart-frame">
       <svg class="chart" id="chart" tabindex="0" role="img"></svg>
       <div class="tooltip" id="tooltip" hidden></div>
     </div>
     <div class="study">
-      <p>The sleep limit is based on the study cited below, which concludes:</p>
+      <p>The sleep lines are based on the study cited below, which concludes:</p>
       <blockquote id="study-conclusion"></blockquote>
       <p id="limit-note"></p>
       <p class="reference"><span id="study-citation"></span><a id="study-link"></a></p>
@@ -402,21 +422,21 @@
       ["caffeine.json", "sleep.json"].map((file) => fetch(file).then((response) => response.json()))
     );
 
-    // Highest bedtime level the sleep study found safe, inferred with our formulas.
-    const sleepLimit = caffeineInBody(sleep.safe.dose_mg, sleep.safe.hours_before_bed);
+    // Bedtime levels for the study's safe and harmful cases, inferred with our formulas.
+    const safeLevel = caffeineInBody(sleep.safe.dose_mg, sleep.safe.hours_before_bed);
+    const harmfulLevel = caffeineInBody(sleep.unsafe.dose_mg, sleep.unsafe.hours_before_bed);
 
-    const unsafeLevel = caffeineInBody(sleep.unsafe.dose_mg, sleep.unsafe.hours_before_bed);
     const studyLink = document.getElementById("study-link");
     document.getElementById("study-conclusion").textContent = `“${sleep.study.conclusion}”`;
     document.getElementById("study-citation").textContent = `${sleep.study.citation}, `;
     studyLink.href = sleep.study.doi_url;
     studyLink.textContent = sleep.study.doi_url;
     document.getElementById("limit-note").textContent =
-      "Thus, the limit drawn on the chart is not a clearly measured threshold: it is inferred from our " +
+      "Thus, the two lines drawn on the chart are not clearly measured thresholds: they are inferred from our " +
       `caffeine absorption and decay formulas. ${sleep.safe.dose_mg} mg taken ${sleep.safe.hours_before_bed} hours ` +
-      `before bed leaves about ${Math.round(sleepLimit)} mg in the body at bedtime, which the study found safe, while ` +
-      `${sleep.unsafe.dose_mg} mg taken ${sleep.unsafe.hours_before_bed} hours before bed leaves about ` +
-      `${Math.round(unsafeLevel)} mg, which may impact sleep. The line is drawn at the safe level.`;
+      `before bed leaves about ${Math.round(safeLevel)} mg in the body at bedtime, which the study found safe ` +
+      `(blue line), while ${sleep.unsafe.dose_mg} mg taken ${sleep.unsafe.hours_before_bed} hours before bed ` +
+      `leaves about ${Math.round(harmfulLevel)} mg, which may impact sleep (red line).`;
 
     const totalOutput = document.getElementById("total");
     const panels = document.getElementById("drink-panels");
@@ -548,7 +568,7 @@
 
       const points = curvePoints();
       const highest = Math.max(...points.map(([, level]) => level));
-      const top = Math.max(highest, sleepLimit * 1.5);
+      const top = Math.max(highest, harmfulLevel * 1.25);
       const step = niceStep(top / 4);
       const yMax = Math.ceil(top / step) * step;
 
@@ -575,12 +595,22 @@
       draw("text", { x: x(now), y: MARGIN.top - 6, "text-anchor": "middle" }).textContent = "Now";
 
       const line = points.map(([time, level], i) => `${i ? "L" : "M"}${x(time).toFixed(1)},${y(level).toFixed(1)}`).join("");
-      const sleepY = y(sleepLimit);
+      // The safe label sits under its line and the harmful one above, so they never collide.
+      const limits = [
+        { kind: "safe", level: safeLevel, label: "Tested safe for sleep", labelOffset: 16 },
+        { kind: "harmful", level: harmfulLevel, label: "Tested harmful to sleep", labelOffset: -6 },
+      ];
+
       draw("path", { class: "area", d: `${line}L${x(24)},${y(0)}L${x(0)},${y(0)}Z` });
-      draw("line", { class: "sleep-line", x1: MARGIN.left, x2: width - MARGIN.right, y1: sleepY, y2: sleepY });
+      for (const limit of limits) {
+        const limitY = y(limit.level);
+        draw("line", { class: `limit-line ${limit.kind}`, x1: MARGIN.left, x2: width - MARGIN.right, y1: limitY, y2: limitY });
+      }
       draw("path", { class: "curve", d: line });
-      draw("text", { class: "sleep-label", x: MARGIN.left + 6, y: sleepY - 6 })
-        .textContent = `Max for good sleep: ${Math.round(sleepLimit)} mg`;
+      for (const limit of limits) {
+        draw("text", { class: "limit-label", x: MARGIN.left + 6, y: y(limit.level) + limit.labelOffset })
+          .textContent = `${limit.label}: ${Math.round(limit.level)} mg`;
+      }
 
       for (const entry of intake) {
         draw("line", { class: "intake-tick", x1: x(entry.time), x2: x(entry.time), y1: y(0), y2: y(0) + 6 });
@@ -591,9 +621,10 @@
       draw("line", { y1: MARGIN.top, y2: y(0) }, crosshair);
       draw("circle", { r: 5 }, crosshair);
 
+      const limitsText = limits.map((limit) => `${limit.label}: ${Math.round(limit.level)} mg.`).join(" ");
       chart.setAttribute("aria-label", intake.length
-        ? `Caffeine in your body over the day, peaking at ${Math.round(highest)} mg. Max for good sleep: ${Math.round(sleepLimit)} mg.`
-        : `Caffeine in your body over the day. No drinks added yet. Max for good sleep: ${Math.round(sleepLimit)} mg.`);
+        ? `Caffeine in your body over the day, peaking at ${Math.round(highest)} mg. ${limitsText}`
+        : `Caffeine in your body over the day. No drinks added yet. ${limitsText}`);
 
       if (!tooltip.hidden) showCrosshair(cursorTime);
     }
