@@ -441,6 +441,14 @@
       <div class="tooltip" id="tooltip" hidden></div>
     </div>
     <div class="study">
+      <p id="decay-note"></p>
+      <p class="reference">
+        Statland BE, Demas TJ. Serum caffeine half-lives. Healthy subjects vs. patients having alcoholic hepatic
+        disease. Am J Clin Pathol. 1980 Mar;73(3):390-3. doi:
+        <a href="https://doi.org/10.1093/ajcp/73.3.390">10.1093/ajcp/73.3.390</a>. PMID: 7361718.
+      </p>
+    </div>
+    <div class="study">
       <p>The sleep lines are based on the study cited below, which concludes:</p>
       <blockquote id="study-conclusion"></blockquote>
       <p id="limit-note"></p>
@@ -465,7 +473,7 @@
   </template>
 
   <script type="module">
-    import { caffeineInBody } from "./formulas.js";
+    import { caffeineInBody, HALF_LIFE_HOURS } from "./formulas.js";
 
     // "no-cache" makes the browser check for a newer copy, so a page update never runs with stale data.
     const [caffeine, sleep] = await Promise.all(
@@ -477,6 +485,12 @@
     // Bedtime levels for the study's safe and harmful cases, inferred with our formulas.
     const safeLevel = caffeineInBody(sleep.safe.dose_mg, sleep.safe.hours_before_bed);
     const harmfulLevel = caffeineInBody(sleep.unsafe.dose_mg, sleep.unsafe.hours_before_bed);
+
+    document.getElementById("decay-note").textContent =
+      `The curve assumes caffeine leaves the body with a half-life of ${HALF_LIFE_HOURS} hours, the mean serum ` +
+      "half-life measured in healthy subjects by the study cited below. Caveat: this study dates from 1980 and " +
+      "measured only 3 healthy subjects, so the value is a rough estimate. Half-lives also vary a lot between " +
+      "people: the same study measured 60 and 168 hours in two patients with alcoholic liver disease.";
 
     const studyLink = document.getElementById("study-link");
     document.getElementById("study-conclusion").textContent = `“${sleep.study.conclusion}”`;

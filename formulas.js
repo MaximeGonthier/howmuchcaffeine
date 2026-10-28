@@ -8,8 +8,11 @@
 // Blood levels typically peak 30 to 60 minutes after drinking.
 export const ABSORPTION_HOURS = 0.75;
 
-// About 5 hours is a typical half-life for a healthy adult (roughly 3 to 7).
-export const HALF_LIFE_HOURS = 5;
+// Mean serum half-life measured in healthy subjects by Statland BE, Demas TJ. Serum caffeine
+// half-lives. Healthy subjects vs. patients having alcoholic hepatic disease. Am J Clin Pathol.
+// 1980 Mar;73(3):390-3. doi: 10.1093/ajcp/73.3.390. PMID: 7361718.
+// Only 3 healthy subjects were measured, and half-lives vary widely between people.
+export const HALF_LIFE_HOURS = 5.7;
 
 // Gradual increase: total milligrams absorbed `hoursSinceIntake` hours after
 // drinking `doseMg`, not counting decay.
