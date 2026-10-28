@@ -2,10 +2,16 @@
   "espresso": { "caffeine_mg": 63 },
   "cappuccino": { "caffeine_mg": 63 },
   "americano": { "caffeine_mg": 63 },
+  "filter_coffee": { "caffeine_mg": 95 },
+  "latte": { "caffeine_mg": 63 },
+  "instant_coffee": { "caffeine_mg": 60 },
+  "black_tea": { "caffeine_mg": 47 },
+  "green_tea": { "caffeine_mg": 30 },
   "matcha": { "caffeine_mg": 70 },
-  "tea": { "caffeine_mg": 47 },
-  "energy_drink": { "caffeine_mg": 80 },
+  "ice_tea": { "caffeine_mg": 20 },
   "cola": { "caffeine_mg": 32 },
   "diet_cola": { "caffeine_mg": 42 },
+  "energy_drink": { "caffeine_mg": 80 },
+  "hot_chocolate": { "caffeine_mg": 5 },
   "dark_chocolate": { "caffeine_mg": 8 }
 }
