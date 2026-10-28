@@ -1,0 +1,5 @@
+{
+  "espresso": { "caffeine_mg": 63 },
+  "cappuccino": { "caffeine_mg": 63 },
+  "americano": { "caffeine_mg": 63 }
+}
