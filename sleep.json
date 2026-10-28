@@ -1,3 +1,9 @@
 {
-  "max_caffeine_mg": 100
+  "study": {
+    "citation": "Carissa L Gardiner, Jonathon Weakley, Louise M Burke, Francesca Fernandez, Rich D Johnston, Josh Leota, Suzanna Russell, Gabriella Munteanu, Andrew Townshend, Shona L Halson, Dose and timing effects of caffeine on subsequent sleep: a randomized clinical crossover trial, Sleep, Volume 48, Issue 4, April 2025, zsae230",
+    "doi_url": "https://doi.org/10.1093/sleep/zsae230",
+    "conclusion": "A 100 mg dose of caffeine can be consumed up to 4 hours prior to bedtime, but 400 mg may negatively impact sleep when consumed as one dose within 12 hours of bedtime, with the adverse influence on sleep increasing the closer consumption occurs to bedtime. The discrepancy between objective and subjective sleep quality suggests that individuals may have difficulty accurately perceiving the influence of caffeine on sleep quality."
+  },
+  "safe": { "dose_mg": 100, "hours_before_bed": 4 },
+  "unsafe": { "dose_mg": 400, "hours_before_bed": 12 }
 }
