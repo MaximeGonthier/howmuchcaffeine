@@ -10,7 +10,9 @@
   <style>
     :root {
       --espresso: #3B2418;
+      --roast: #5C3A27;
       --cream: #F3E5D0;
+      --milk: #FBF4EA;
     }
 
     * {
@@ -31,6 +33,13 @@
       font-family: "Fraunces", Georgia, "Times New Roman", serif;
     }
 
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
     h1 {
       margin: 0;
       max-width: 20ch;
@@ -41,6 +50,11 @@
       text-wrap: balance;
     }
 
+    .total {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
     .drinks {
       display: grid;
       grid-template-columns: repeat(3, 12rem);
@@ -48,36 +62,57 @@
     }
 
     .drink {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
       aspect-ratio: 1;
-      border: none;
       border-radius: 1rem;
       background-color: var(--cream);
       color: var(--espresso);
-      font: inherit;
-      font-size: 1.25rem;
-      font-weight: 600;
-      cursor: pointer;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
     @media (hover: hover) {
-      .drink:hover {
+      .drink[data-state="idle"]:hover {
         transform: translateY(-4px);
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
       }
     }
 
-    .drink:active {
+    .drink:has(.drink-face:active) {
       transform: scale(0.95);
       box-shadow: none;
     }
 
-    .drink:focus-visible {
+    /* Each card shows one panel at a time, picked by its data-state. */
+    .drink-face,
+    .drink-when,
+    .drink-hour {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.75rem;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    .drink[data-state="idle"] .drink-face,
+    .drink[data-state="when"] .drink-when,
+    .drink[data-state="hour"] .drink-hour {
+      display: flex;
+    }
+
+    .drink-face {
+      align-items: center;
+      border: none;
+      border-radius: inherit;
+      background: none;
+      color: inherit;
+      font: inherit;
+      font-size: 1.25rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .drink-face:focus-visible {
       outline: 3px solid var(--cream);
       outline-offset: 4px;
     }
@@ -85,6 +120,61 @@
     .drink-icon {
       font-size: 3.5rem;
       line-height: 1;
+    }
+
+    .drink-when,
+    .drink-hour {
+      padding: 1.25rem;
+    }
+
+    .drink-when .choice {
+      flex: 1;
+    }
+
+    .choice {
+      padding: 0.75rem;
+      border: none;
+      border-radius: 0.6rem;
+      background-color: var(--espresso);
+      color: var(--cream);
+      font: inherit;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.15s ease;
+    }
+
+    @media (hover: hover) {
+      .choice:hover {
+        background-color: var(--roast);
+      }
+    }
+
+    .choice:active {
+      transform: scale(0.96);
+    }
+
+    .choice:focus-visible,
+    .hour-select:focus-visible {
+      outline: 3px solid var(--roast);
+      outline-offset: 2px;
+    }
+
+    .hour-label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .hour-select {
+      padding: 0.5rem;
+      border: 2px solid var(--espresso);
+      border-radius: 0.6rem;
+      background-color: var(--milk);
+      color: var(--espresso);
+      font: inherit;
     }
 
     @media (max-width: 600px) {
@@ -95,28 +185,124 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .drink {
+      .drink,
+      .choice {
         transition: none;
       }
     }
   </style>
 </head>
 <body>
-  <h1>Quickly calculate your caffeine intake</h1>
+  <header>
+    <h1>Quickly calculate your caffeine intake</h1>
+    <p class="total" aria-live="polite">Caffeine intake: <span id="total">0</span> mg</p>
+  </header>
 
   <div class="drinks">
-    <button type="button" class="drink" data-drink="espresso">
-      <span class="drink-icon" aria-hidden="true">☕</span>
-      Espresso
-    </button>
-    <button type="button" class="drink" data-drink="cappuccino">
-      <span class="drink-icon" aria-hidden="true">☕</span>
-      Cappuccino
-    </button>
-    <button type="button" class="drink" data-drink="americano">
-      <span class="drink-icon" aria-hidden="true">☕</span>
-      Americano
-    </button>
+    <div class="drink" data-drink="espresso" data-state="idle">
+      <button type="button" class="drink-face">
+        <span class="drink-icon" aria-hidden="true">☕</span>
+        Espresso
+      </button>
+    </div>
+    <div class="drink" data-drink="cappuccino" data-state="idle">
+      <button type="button" class="drink-face">
+        <span class="drink-icon" aria-hidden="true">☕</span>
+        Cappuccino
+      </button>
+    </div>
+    <div class="drink" data-drink="americano" data-state="idle">
+      <button type="button" class="drink-face">
+        <span class="drink-icon" aria-hidden="true">☕</span>
+        Americano
+      </button>
+    </div>
   </div>
+
+  <template id="drink-panels">
+    <div class="drink-when">
+      <button type="button" class="choice when-now">Now</button>
+      <button type="button" class="choice when-earlier">Earlier</button>
+    </div>
+    <form class="drink-hour">
+      <label class="hour-label">
+        What time?
+        <select class="hour-select" name="hour"></select>
+      </label>
+      <button type="submit" class="choice">Add</button>
+    </form>
+  </template>
+
+  <script type="module">
+    const caffeine = await fetch("caffeine.json").then((response) => response.json());
+
+    const totalOutput = document.getElementById("total");
+    const panels = document.getElementById("drink-panels");
+    const cards = document.querySelectorAll(".drink");
+    const intake = [];
+
+    const focusTarget = { idle: ".drink-face", when: ".when-now", hour: ".hour-select" };
+
+    function setState(card, state) {
+      card.dataset.state = state;
+      card.querySelector(focusTarget[state]).focus();
+    }
+
+    function closeAll(except) {
+      for (const card of cards) {
+        if (card !== except) card.dataset.state = "idle";
+      }
+    }
+
+    function addDrink(card, hour) {
+      const drink = card.dataset.drink;
+      intake.push({ drink, hour, mg: caffeine[drink].caffeine_mg });
+      totalOutput.textContent = intake.reduce((sum, entry) => sum + entry.mg, 0);
+      setState(card, "idle");
+    }
+
+    // Only hours from midnight up to the current hour count as "earlier".
+    function fillHours(select) {
+      const currentHour = new Date().getHours();
+      select.replaceChildren();
+      for (let hour = 0; hour <= currentHour; hour++) {
+        select.add(new Option(`${String(hour).padStart(2, "0")}:00`, hour));
+      }
+      select.value = Math.max(currentHour - 1, 0);
+    }
+
+    for (const card of cards) {
+      card.append(panels.content.cloneNode(true));
+
+      card.querySelector(".drink-face").addEventListener("click", () => {
+        closeAll(card);
+        setState(card, "when");
+      });
+
+      card.querySelector(".when-now").addEventListener("click", () => {
+        addDrink(card, new Date().getHours());
+      });
+
+      card.querySelector(".when-earlier").addEventListener("click", () => {
+        fillHours(card.querySelector(".hour-select"));
+        setState(card, "hour");
+      });
+
+      card.querySelector(".drink-hour").addEventListener("submit", (event) => {
+        event.preventDefault();
+        addDrink(card, Number(card.querySelector(".hour-select").value));
+      });
+    }
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      const open = document.querySelector('.drink:not([data-state="idle"])');
+      if (open) setState(open, "idle");
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".drink")) closeAll();
+    });
+  </script>
 </body>
 </html>
