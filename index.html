@@ -38,13 +38,6 @@
       font-family: "Fraunces", Georgia, "Times New Roman", serif;
     }
 
-    header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-    }
-
     h1 {
       margin: 0;
       max-width: 20ch;
@@ -53,11 +46,6 @@
       line-height: 1.15;
       text-align: center;
       text-wrap: balance;
-    }
-
-    .total {
-      margin: 0;
-      font-size: 1.5rem;
     }
 
     .drinks {
@@ -351,7 +339,6 @@
 <body>
   <header>
     <h1>Quickly calculate your caffeine intake</h1>
-    <p class="total" aria-live="polite">Caffeine intake: <span id="total">0</span> mg</p>
   </header>
 
   <div class="drinks">
@@ -446,7 +433,6 @@
       `(blue line), while ${sleep.unsafe.dose_mg} mg taken ${sleep.unsafe.hours_before_bed} hours before bed ` +
       `leaves about ${Math.round(harmfulLevel)} mg, which may impact sleep (red line).`;
 
-    const totalOutput = document.getElementById("total");
     const panels = document.getElementById("drink-panels");
     const cards = document.querySelectorAll(".drink");
     const chart = document.getElementById("chart");
@@ -482,7 +468,6 @@
     function addDrink(card, time) {
       const drink = card.dataset.drink;
       intake.push({ drink, time, mg: caffeine[drink].caffeine_mg });
-      totalOutput.textContent = intake.reduce((sum, entry) => sum + entry.mg, 0);
       setState(card, "idle");
       render();
     }
