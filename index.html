@@ -327,6 +327,12 @@
       overflow-wrap: anywhere;
     }
 
+    .visitors {
+      color: var(--cream);
+      font-size: 0.9rem;
+      opacity: 0.75;
+    }
+
     @media (max-width: 600px) {
       .drinks {
         grid-template-columns: 1fr;
@@ -400,6 +406,8 @@
       <p class="reference"><span id="study-citation"></span><a id="study-link"></a></p>
     </div>
   </section>
+
+  <footer class="visitors" id="visitors" hidden></footer>
 
   <template id="drink-panels">
     <div class="drink-when">
@@ -678,5 +686,25 @@
     new ResizeObserver(render).observe(chart.parentElement);
     setInterval(render, 60_000);
   </script>
+
+  <script type="module">
+    // Visitor total from GoatCounter, read from the same site the counting script below reports to.
+    // The line stays hidden if GoatCounter is blocked or unreachable.
+    const endpoint = document.querySelector("script[data-goatcounter]").dataset.goatcounter;
+    try {
+      const response = await fetch(new URL("/counter/TOTAL.json", endpoint));
+      if (response.ok) {
+        const { count } = await response.json();
+        const footer = document.getElementById("visitors");
+        footer.textContent = `${count} ${count === "1" ? "visitor" : "visitors"}`;
+        footer.hidden = false;
+      }
+    } catch {
+      // Blocked or offline: keep the line hidden.
+    }
+  </script>
+
+  <script data-goatcounter="https://maximegonthier.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
