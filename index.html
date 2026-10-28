@@ -378,6 +378,24 @@
         Energy drink
       </button>
     </div>
+    <div class="drink" data-drink="cola" data-state="idle">
+      <button type="button" class="drink-face">
+        <span class="drink-icon" aria-hidden="true">🥤</span>
+        Cola
+      </button>
+    </div>
+    <div class="drink" data-drink="diet_cola" data-state="idle">
+      <button type="button" class="drink-face">
+        <span class="drink-icon" aria-hidden="true">🥤</span>
+        Diet cola
+      </button>
+    </div>
+    <div class="drink" data-drink="dark_chocolate" data-state="idle">
+      <button type="button" class="drink-face">
+        <span class="drink-icon" aria-hidden="true">🍫</span>
+        Dark chocolate
+      </button>
+    </div>
   </div>
 
   <section class="chart-card">
@@ -413,8 +431,11 @@
   <script type="module">
     import { caffeineInBody } from "./formulas.js";
 
+    // "no-cache" makes the browser check for a newer copy, so a page update never runs with stale data.
     const [caffeine, sleep] = await Promise.all(
-      ["caffeine.json", "sleep.json"].map((file) => fetch(file).then((response) => response.json()))
+      ["caffeine.json", "sleep.json"].map((file) =>
+        fetch(file, { cache: "no-cache" }).then((response) => response.json())
+      )
     );
 
     // Bedtime levels for the study's safe and harmful cases, inferred with our formulas.
@@ -668,6 +689,8 @@
       showCrosshair(Math.min(24, Math.max(0, cursorTime + delta)));
     });
 
+    // Give the chart its final height before observing, so the first render doesn't resize what's observed.
+    chart.setAttribute("height", CHART_HEIGHT);
     new ResizeObserver(render).observe(chart.parentElement);
     setInterval(render, 60_000);
   </script>

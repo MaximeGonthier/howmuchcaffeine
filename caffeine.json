@@ -4,5 +4,8 @@
   "americano": { "caffeine_mg": 63 },
   "matcha": { "caffeine_mg": 70 },
   "tea": { "caffeine_mg": 47 },
-  "energy_drink": { "caffeine_mg": 80 }
+  "energy_drink": { "caffeine_mg": 80 },
+  "cola": { "caffeine_mg": 32 },
+  "diet_cola": { "caffeine_mg": 42 },
+  "dark_chocolate": { "caffeine_mg": 8 }
 }
